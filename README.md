@@ -1,3 +1,8 @@
-# Clock CE
+# Clock Plus CE
 
-A simple screensaver to show the time and calculator stats.
+A simple dynamic screensaver to show the time and calculator stats.
+
+## Build
+
+- Install the [CE C/C++ Toolchain](https://ce-programming.github.io/toolchain/index.html)
+-

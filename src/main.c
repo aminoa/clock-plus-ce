@@ -5,6 +5,7 @@
 #include <keypadc.h>
 #include <sys/rtc.h>
 #include <sys/timers.h>
+#include <sys/power.h>
 
 /* RGB color definitions for caterpillar */
 #define COLOR_PURPLE_LIGHT  gfx_RGBTo1555(190, 162, 218)
@@ -15,6 +16,13 @@
 /* Caterpillar position (bottom-right corner) */
 #define CAT_BASE_X  270
 #define CAT_BASE_Y  200
+
+// Battery Status definitions
+#define BATTERY_EMPTY       0
+#define BATTERY_LOW         1
+#define BATTERY_MEDIUM      2
+#define BATTERY_HIGH        3
+#define BATTERY_FULL        4
 
 static void draw_caterpillar(void)
 {
@@ -111,15 +119,41 @@ int main(void)
         sprintf(buf, "%02d:%02d:%02d", hours, mins, secs);
         gfx_PrintStringXY(buf, 120, 120);
 
-        /* Draw battery status */
+        // Draw battery status
         if (boot_BatteryCharging()) {
-            if (boot_GetBatteryStatus() == 4) {
+            if (boot_GetBatteryStatus() == BATTERY_FULL) {
                 gfx_PrintStringXY("Fully Charged", 104, 10);
             } else {
                 gfx_PrintStringXY("Charging...", 112, 10);
             }
         } else {
-            sprintf(buf, "Battery: %d/4", boot_GetBatteryStatus());
+            switch (boot_GetBatteryStatus()) {
+                // 4 - 100%
+                // 3 - 80%
+                // 2 - 60%
+                // 1 - 40%
+                // 0 - 0-20%
+                case BATTERY_EMPTY:
+                    gfx_SetTextFGColor(gfx_RGBTo1555(255, 0, 0));  /* Red */
+                    break;
+                case BATTERY_LOW:
+                    gfx_SetTextFGColor(gfx_RGBTo1555(255, 165, 0));  /* Orange */
+                    break;
+                case BATTERY_MEDIUM:
+                    gfx_SetTextFGColor(gfx_RGBTo1555(255, 255, 0));  /* Yellow */
+                    break;
+                case BATTERY_HIGH:
+                    gfx_SetTextFGColor(gfx_RGBTo1555(173, 255, 47));  /* GreenYellow */
+                    break;
+                case BATTERY_FULL:
+                    gfx_SetTextFGColor(gfx_RGBTo1555(0, 128, 0));    /* Green */
+                    break;
+                default:
+                    gfx_SetTextFGColor(0x00);  /* Default to black */
+                    break;
+            }
+
+            sprintf(buf, "Battery: %d\%", boot_GetBatteryStatus()  * 25);
             gfx_PrintStringXY(buf, 112, 10);
         }
 
