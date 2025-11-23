@@ -9,7 +9,7 @@
 #include <sys/power.h>
 #include <ti/vars.h>
 
-// RGB color definitions for caterpillar
+// RGB color definitions for caterpillar - gfx_RGBTo1555(r, g, b) is inaccurate so hex codes are substituted
 #define COLOR_PURPLE_LIGHT  gfx_RGBTo1555(190, 162, 218)
 #define COLOR_PURPLE_DARK   gfx_RGBTo1555(128, 80, 128)
 #define COLOR_PINK          gfx_RGBTo1555(255, 182, 193)
@@ -22,19 +22,20 @@
 
 // Scene colors
 #define COLOR_CLOUD_WHITE   gfx_RGBTo1555(245, 245, 250)
-#define COLOR_CLOUD_SHADOW  gfx_RGBTo1555(200, 200, 210)
 #define COLOR_GRASS_GREEN   gfx_RGBTo1555(34, 139, 34)
 #define COLOR_GRASS_LIGHT   gfx_RGBTo1555(50, 180, 50)
 #define COLOR_TREE_TRUNK    gfx_RGBTo1555(0, 102, 0)
-#define COLOR_TREE_LEAVES   gfx_RGBTo1555(34, 120, 34)
-#define COLOR_TREE_LIGHT    gfx_RGBTo1555(0, 102, 0)
-#define COLOR_FLOWER_RED    gfx_RGBTo1555(255, 80, 80)
-#define COLOR_FLOWER_YELLOW gfx_RGBTo1555(255, 220, 50)
-#define COLOR_FLOWER_CENTER gfx_RGBTo1555(255, 200, 0)
+#define COLOR_TREE_LEAVES   0x02
+#define COLOR_TREE_LIGHT    0x03
+#define COLOR_FLOWER_RED    0x18
+#define COLOR_FLOWER_YELLOW 0xE6
+#define COLOR_FLOWER_CENTER 0x6A
 
-// Night sky color
+// Sky colors
 #define COLOR_SKY_BLUE      gfx_RGBTo1555(200, 220, 255)
 #define COLOR_NIGHT_SKY     0x08
+#define COLOR_STAR_BRIGHT   0xE7
+#define COLOR_STAR_DIM      0xA4
 
 // Weather types
 #define WEATHER_NONE    0
@@ -43,6 +44,7 @@
 
 // Particle system for weather effects
 #define MAX_PARTICLES   18
+#define MAX_STARS       1
 
 typedef struct {
     int16_t x;
@@ -51,8 +53,16 @@ typedef struct {
     int8_t  drift;
 } particle_t;
 
+typedef struct {
+    int16_t x;
+    int16_t y;
+    uint8_t brightness;  // 0 = dim, 1 = bright
+} star_t;
+
 static particle_t particles[MAX_PARTICLES];
+static star_t stars[MAX_STARS];
 static uint8_t particles_initialized = 0;
+static uint8_t stars_initialized = 0;
 
 static uint32_t rand_state = 0;
 // I can't get CE rng functions to work so here's a time based implementation
@@ -79,6 +89,34 @@ static uint8_t get_weather_type(void)
 static uint8_t is_nighttime(uint8_t hours)
 {
     return (hours >= 17 || hours < 9);
+}
+
+static void init_stars(void)
+{
+    uint8_t i;
+    for (i = 0; i < MAX_STARS; i++) {
+        stars[i].x = simple_rand() % 320;
+        stars[i].y = simple_rand() % 50;  // Keep stars in upper portion
+        stars[i].brightness = simple_rand() % 2;
+    }
+    stars_initialized = 1;
+}
+
+static void draw_stars(uint8_t frame)
+{
+    uint8_t i;
+    for (i = 0; i < MAX_STARS; i++) {
+        // Twinkle effect: toggle brightness based on frame (slower twinkle)
+        uint8_t twinkle = ((frame + i * 5) / 12) % 2;
+
+        if (stars[i].brightness ^ twinkle) {
+            gfx_SetColor(COLOR_STAR_BRIGHT);
+            gfx_FillCircle(stars[i].x, stars[i].y, 2);
+        } else {
+            gfx_SetColor(COLOR_STAR_DIM);
+            gfx_SetPixel(stars[i].x, stars[i].y);
+        }
+    }
 }
 
 static void init_particles(void)
@@ -230,9 +268,13 @@ static void draw_flowers(void)
     draw_flower(200, 219, COLOR_FLOWER_YELLOW);
 }
 
-static void draw_scene(void)
+static void draw_scene(uint8_t night, uint8_t frame)
 {
-    draw_clouds();
+    if (night) {
+        draw_stars(frame);
+    } else {
+        draw_clouds();
+    }
     draw_trees();
     draw_ground();
     draw_flowers();
@@ -319,6 +361,7 @@ int main(void)
     uint8_t frame = 0;
     uint8_t weather;
     uint8_t night;
+    int8_t night_override = -1;  // -1 = auto, 0 = force day, 1 = force night
     char buf[16];
 
     gfx_Begin();
@@ -328,13 +371,22 @@ int main(void)
         boot_GetDate(&day, &month, &year);
         boot_GetTime(&secs, &mins, &hours);
 
-        // Check if it's nighttime
-        night = is_nighttime(hours);
+        // Check if it's nighttime (use override if set, otherwise auto)
+        if (night_override >= 0) {
+            night = night_override;
+        } else {
+            night = is_nighttime(hours);
+        }
 
         // Initialize particles and weather on first run
         if (!particles_initialized) {
             weather = get_weather_type();
             init_particles();
+        }
+
+        // Initialize stars if needed
+        if (!stars_initialized) {
+            init_stars();
         }
 
         // Fill screen with appropriate background color
@@ -345,7 +397,7 @@ int main(void)
         }
 
         // Draw scene background
-        draw_scene();
+        draw_scene(night, frame);
 
         // Draw weather effects
         draw_weather(weather, frame);
@@ -357,11 +409,12 @@ int main(void)
             gfx_SetTextFGColor(0x00);
         }
 
-        gfx_SetTextScale(3, 3);
+        gfx_SetTextScale(4, 4);
         sprintf(buf, "%02d/%02d/%04d", month, day, year);
-        gfx_PrintStringXY(buf, (320 - gfx_GetStringWidth(buf)) / 2, 90);
-        sprintf(buf, "%02d:%02d:%02d", hours, mins, secs);
-        gfx_PrintStringXY(buf, (320 - gfx_GetStringWidth(buf)) / 2, 120);
+        gfx_PrintStringXY(buf, (320 - gfx_GetStringWidth(buf)) / 2, 60);
+        // sprintf(buf, "%02d:%02d:%02d", hours, mins, secs);
+        sprintf(buf, "%02d:%02d", hours, mins);
+        gfx_PrintStringXY(buf, (320 - gfx_GetStringWidth(buf)) / 2, 110);
         gfx_SetTextScale(1, 1);
 
         // Draw battery status
@@ -405,6 +458,16 @@ int main(void)
         kb_Scan();
         if (kb_Data[6] & kb_Clear) {
             break;
+        }
+
+        // Up arrow = force day, Down arrow = force night
+        if (kb_Data[7] & kb_Up) {
+            weather = get_weather_type();
+            night_override = 0;
+        }
+        if (kb_Data[7] & kb_Down) {
+            weather = get_weather_type();
+            night_override = 1;
         }
 
         frame++;
