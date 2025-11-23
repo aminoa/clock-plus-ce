@@ -1,0 +1,34 @@
+// config.h - Configuration constants for CLOCK
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// Screen dimensions
+#define SCREEN_WIDTH    320
+#define SCREEN_HEIGHT   240
+
+// Caterpillar position (bottom-right corner)
+#define CAT_BASE_X      270
+#define CAT_BASE_Y      208
+
+// Animation timing
+#define FRAME_DELAY_MS  200
+
+// Weather system
+#define MAX_PARTICLES   18
+#define MAX_STARS       1
+#define WEATHER_NONE    0
+#define WEATHER_SNOW    1
+#define WEATHER_RAIN    2
+
+// Battery status thresholds
+#define BATTERY_EMPTY   0
+#define BATTERY_LOW     1
+#define BATTERY_MEDIUM  2
+#define BATTERY_HIGH    3
+#define BATTERY_FULL    4
+
+// Night time bounds (24-hour format)
+#define NIGHT_START_HOUR    17
+#define NIGHT_END_HOUR      9
+
+#endif
