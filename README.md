@@ -9,6 +9,7 @@ A dynamic screensaver written for the Ti-84 Plus CE to show the time and calcula
 - Dynamic weather (10% chance of rain, 10% chance of snow)
 - Battery/Free RAM display
 - Day/night cycle (manual swap by pressing up/down)
+- Quotes from notable open source figures (press left/right)
 
 ## Build
 

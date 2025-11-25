@@ -24,23 +24,10 @@ static star_t stars[MAX_STARS];
 static uint8_t particles_initialized = 0;
 static uint8_t stars_initialized = 0;
 
-static uint32_t rand_state = 0;
-
-// Simple RNG using time
-static uint32_t simple_rand(void)
-{
-    uint8_t secs, mins, hours;
-    boot_GetTime(&secs, &mins, &hours);
-
-    rand_state = rand_state * 1103515245 + 12345;
-    rand_state ^= (uint32_t)(secs * 17 + mins * 59 + hours * 3600);
-    return rand_state;
-}
-
 uint8_t weather_get_random_type(void)
 {
     // RNG-based weather: 80% none, 10% snow, 10% rain
-    int r = simple_rand() % 10;
+    int r = rtc_Time() % 10;
     if (r == 0) return WEATHER_SNOW;
     if (r == 1) return WEATHER_RAIN;
     return WEATHER_NONE;
