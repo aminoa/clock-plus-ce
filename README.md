@@ -2,7 +2,7 @@
 
 A dynamic screensaver written for the Ti-84 Plus CE to show the time and calculator stats. 
 
-![Feature Sleeping](./screenshot.png)
+![Feature Sleeping](./screensaver.png)
 
 ## Features
 
