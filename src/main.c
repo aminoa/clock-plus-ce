@@ -214,7 +214,7 @@ int main(void)
         gfx_SetTextScale(1, 1);
 
         // Draw sleeping feature animation
-        feature_draw();
+        feature_draw(frame);
         feature_draw_zzz(frame);
 
         gfx_SwapDraw();
@@ -262,7 +262,7 @@ int main(void)
         }
 
         frame++;
-        delay(FRAME_DELAY_MS);
+        // delay(FRAME_DELAY_MS);
     }
 
     gfx_End();

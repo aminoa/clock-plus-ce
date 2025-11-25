@@ -5,32 +5,35 @@
 
 #include <graphx.h>
 
-void feature_draw(void)
+void feature_draw(uint8_t frame)
 {
+    // Calculate breathing effect: oscillates between -1 and +1
+    int8_t breath = ((frame / 4) % 20 < 10) ? ((frame / 4) % 10) / 5 : (9 - ((frame / 4) % 10)) / 5;
+    
     // Body segments (back to front, so front overlaps)
     // Segment 4 (tail)
     gfx_SetColor(COLOR_PURPLE_DARK);
-    gfx_Circle(CAT_BASE_X + 38, CAT_BASE_Y + 8, 12);
+    gfx_Circle(CAT_BASE_X + 38, CAT_BASE_Y + 8, 12 + breath);
     gfx_SetColor(COLOR_PURPLE_LIGHT);
-    gfx_FillCircle(CAT_BASE_X + 38, CAT_BASE_Y + 8, 11);
+    gfx_FillCircle(CAT_BASE_X + 38, CAT_BASE_Y + 8, 11 + breath);
 
     // Segment 3
     gfx_SetColor(COLOR_PURPLE_DARK);
-    gfx_Circle(CAT_BASE_X + 22, CAT_BASE_Y + 4, 14);
+    gfx_Circle(CAT_BASE_X + 22, CAT_BASE_Y + 4, 14 + breath);
     gfx_SetColor(COLOR_PURPLE_LIGHT);
-    gfx_FillCircle(CAT_BASE_X + 22, CAT_BASE_Y + 4, 13);
+    gfx_FillCircle(CAT_BASE_X + 22, CAT_BASE_Y + 4, 13 + breath);
 
     // Segment 2
     gfx_SetColor(COLOR_PURPLE_DARK);
-    gfx_Circle(CAT_BASE_X + 4, CAT_BASE_Y + 2, 16);
+    gfx_Circle(CAT_BASE_X + 4, CAT_BASE_Y + 2, 16 + breath);
     gfx_SetColor(COLOR_PURPLE_LIGHT);
-    gfx_FillCircle(CAT_BASE_X + 4, CAT_BASE_Y + 2, 15);
+    gfx_FillCircle(CAT_BASE_X + 4, CAT_BASE_Y + 2, 15 + breath);
 
     // Head (segment 1)
     gfx_SetColor(COLOR_PURPLE_DARK);
-    gfx_Circle(CAT_BASE_X - 16, CAT_BASE_Y + 2, 18);
+    gfx_Circle(CAT_BASE_X - 16, CAT_BASE_Y + 2, 18 + breath);
     gfx_SetColor(COLOR_PURPLE_LIGHT);
-    gfx_FillCircle(CAT_BASE_X - 16, CAT_BASE_Y + 2, 17);
+    gfx_FillCircle(CAT_BASE_X - 16, CAT_BASE_Y + 2, 17 + breath);
 
     // Antennae
     gfx_SetColor(COLOR_PURPLE_DARK);
