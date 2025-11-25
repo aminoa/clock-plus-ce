@@ -227,9 +227,11 @@ int main(void)
         // Up arrow = force night, Down arrow = force day
         if (kb_Data[7] & kb_Up) {
             night_override = 1;
+            weather = weather_get_random_type();
         }
         if (kb_Data[7] & kb_Down) {
             night_override = 0;
+            weather = weather_get_random_type();
         }
 
         // Left/Right arrows = toggle between battery/RAM and quote

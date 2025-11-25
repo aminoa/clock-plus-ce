@@ -27,7 +27,7 @@ static uint8_t stars_initialized = 0;
 uint8_t weather_get_random_type(void)
 {
     // RNG-based weather: 80% none, 10% snow, 10% rain
-    int r = rtc_Time() % 10;
+    int r = simple_rand() % 10;
     if (r == 0) return WEATHER_SNOW;
     if (r == 1) return WEATHER_RAIN;
     return WEATHER_NONE;
