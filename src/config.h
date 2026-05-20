@@ -14,7 +14,7 @@
 #define CAT_BASE_Y      208
 
 // Animation timing
-#define FRAME_DELAY_MS  200
+#define FRAME_DELAY_MS  1024
 
 // Weather system
 #define MAX_PARTICLES   18

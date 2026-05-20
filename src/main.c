@@ -262,7 +262,8 @@ int main(void)
         }
 
         frame++;
-        // delay(FRAME_DELAY_MS);
+
+        delay(FRAME_DELAY_MS);
     }
 
     gfx_End();
