@@ -114,6 +114,8 @@ int main(void)
     uint8_t show_quote = 0;      // 0 = battery/RAM, 1 = quote
     uint8_t current_quote = 0;
     uint8_t left_pressed = 0, right_pressed = 0;
+    uint8_t no_anim_mode = 0;    // 0 = animations on, 1 = static (day/night only)
+    uint8_t second_pressed = 0;
     char buf[32];
 
     gfx_Begin();
@@ -151,11 +153,11 @@ int main(void)
             gfx_FillScreen(COLOR_SKY_BLUE);
         }
 
-        // Draw scene background
-        scene_draw(night, frame);
-
-        // Draw weather effects
-        weather_draw(weather, frame);
+        // Draw scene background and weather effects (skipped in no-animation mode)
+        if (!no_anim_mode) {
+            scene_draw(night, frame);
+            weather_draw(weather, frame);
+        }
 
         // Draw date and time - white text at night, black during day
         if (night) {
@@ -213,15 +215,27 @@ int main(void)
         gfx_PrintStringXY(buf, (SCREEN_WIDTH - gfx_GetStringWidth(buf)) / 2, 110);
         gfx_SetTextScale(1, 1);
 
-        // Draw sleeping feature animation
-        feature_draw(frame);
-        feature_draw_zzz(frame);
+        // Draw sleeping feature animation (skipped in no-animation mode)
+        if (!no_anim_mode) {
+            feature_draw(frame);
+            feature_draw_zzz(frame);
+        }
 
         gfx_SwapDraw();
 
         kb_Scan();
         if (kb_Data[6] & kb_Clear) {
             break;
+        }
+
+        // 2nd key = toggle no-animation mode
+        if (kb_Data[1] & kb_2nd) {
+            if (!second_pressed) {
+                no_anim_mode = !no_anim_mode;
+                second_pressed = 1;
+            }
+        } else {
+            second_pressed = 0;
         }
 
         // Up arrow = force night, Down arrow = force day
